@@ -83,8 +83,13 @@ const groups = computed(() => {
 		const filteredInterfaces = interfacesSorted.value.filter((inter) => (inter.group ?? 'other') === group);
 		if (!search.value) return filteredInterfaces;
 		const searchValue = search.value!.toLowerCase();
+		// Always keep the chosen interface, so its configuration stays open even when the interface is switched
+		// automatically (e.g. m2m -> files when directus_files is chosen as related collection)
 		return filteredInterfaces.filter(
-			(inter) => inter.id.toLowerCase().includes(searchValue) || inter.name.toLowerCase().includes(searchValue),
+			(inter) =>
+				inter.id === chosenInterface.value ||
+				inter.id.toLowerCase().includes(searchValue) ||
+				inter.name.toLowerCase().includes(searchValue),
 		);
 	}
 });

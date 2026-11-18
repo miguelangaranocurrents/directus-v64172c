@@ -47,6 +47,25 @@ const userStore = useUserStore();
 
 const isRTL = computed(() => userStore.textDirection === 'rtl');
 
+/**
+ * First day of the week for the user's locale (0 = Sunday, 6 = Saturday), as expected by the calendar
+ */
+const weekStartsOn = computed<0 | 1 | 2 | 3 | 4 | 5 | 6>(() => {
+	try {
+		const locale = new Intl.Locale(userStore.language) as Intl.Locale & {
+			getWeekInfo?: () => { firstDay: number };
+			weekInfo?: { firstDay: number };
+		};
+
+		const firstDay = locale.getWeekInfo?.().firstDay ?? locale.weekInfo?.firstDay;
+		if (typeof firstDay === 'number') return (firstDay % 7) as 0 | 1 | 2 | 3 | 4 | 5 | 6;
+	} catch {
+		// Fall through to default
+	}
+
+	return 0;
+});
+
 const {
 	calendarValue,
 	timeValue,
@@ -157,6 +176,8 @@ function setToNow() {
 			class="calendar"
 			fixed-weeks
 			weekday-format="short"
+			:locale="userStore.language"
+			:week-starts-on="weekStartsOn"
 			:dir="isRTL ? 'rtl' : 'ltr'"
 			@update:model-value="handleDateChange"
 		>
